@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, Chrome, UserX, Eye, EyeOff, Rocket, CheckCircle } from 'lucide-react';
+import { User, Mail, Lock, UserX, Eye, EyeOff, Rocket, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function Signup() {
-  const { signUp, signInWithGoogle, signInAsGuest } = useAuth();
+  const { signUp, signInAsGuest } = useAuth();
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -12,7 +12,6 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
   const passwordStrength = (() => {
@@ -40,13 +39,6 @@ export default function Signup() {
     if (err) { setError(err); return; }
     setSuccess(true);
     setTimeout(() => navigate('/dashboard'), 1500);
-  }
-
-  async function handleGoogle() {
-    setGoogleLoading(true);
-    const { error: err } = await signInWithGoogle();
-    setGoogleLoading(false);
-    if (err) setError(err);
   }
 
   function handleGuest() {
@@ -120,19 +112,6 @@ export default function Signup() {
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-white">Create Account</h2>
               <p className="text-white/40 text-sm mt-1">Join thousands building better habits</p>
-            </div>
-
-            <button onClick={handleGoogle} disabled={googleLoading} className="btn-secondary w-full mb-4">
-              {googleLoading ? (
-                <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-              ) : <Chrome size={18} />}
-              <span>Continue with Google</span>
-            </button>
-
-            <div className="flex items-center gap-3 my-5">
-              <div className="flex-1 h-px bg-white/10" />
-              <span className="text-white/30 text-xs">or create with email</span>
-              <div className="flex-1 h-px bg-white/10" />
             </div>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">

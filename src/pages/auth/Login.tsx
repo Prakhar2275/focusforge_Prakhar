@@ -1,17 +1,16 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Chrome, UserX, Eye, EyeOff, Zap, Target, Brain } from 'lucide-react';
+import { Mail, Lock, UserX, Eye, EyeOff, Zap, Target, Brain } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function Login() {
-  const { signIn, signInWithGoogle, signInAsGuest } = useAuth();
+  const { signIn, signInAsGuest } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -22,13 +21,6 @@ export default function Login() {
     setLoading(false);
     if (err) { setError(err); return; }
     navigate('/dashboard');
-  }
-
-  async function handleGoogle() {
-    setGoogleLoading(true);
-    const { error: err } = await signInWithGoogle();
-    setGoogleLoading(false);
-    if (err) setError(err);
   }
 
   function handleGuest() {
@@ -101,21 +93,6 @@ export default function Login() {
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-white">Sign In</h2>
               <p className="text-white/40 text-sm mt-1">Welcome back to your productivity hub</p>
-            </div>
-
-            <button onClick={handleGoogle} disabled={googleLoading} className="btn-secondary w-full mb-4 relative">
-              {googleLoading ? (
-                <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-              ) : (
-                <Chrome size={18} />
-              )}
-              <span>Continue with Google</span>
-            </button>
-
-            <div className="flex items-center gap-3 my-5">
-              <div className="flex-1 h-px bg-white/10" />
-              <span className="text-white/30 text-xs">or sign in with email</span>
-              <div className="flex-1 h-px bg-white/10" />
             </div>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">

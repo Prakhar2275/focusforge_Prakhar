@@ -17,7 +17,6 @@ interface AuthContextType {
   isGuest: boolean;
   signUp: (email: string, password: string, name: string) => Promise<{ error: string | null }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
-  signInWithGoogle: () => Promise<{ error: string | null }>;
   signInAsGuest: () => void;
   signOut: () => Promise<void>;
 }
@@ -87,14 +86,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error ? error.message : null };
   }
 
-  async function signInWithGoogle() {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin },
-    });
-    return { error: error ? error.message : null };
-  }
-
   function signInAsGuest() {
     const guestId = 'guest-' + Math.random().toString(36).substring(2);
     localStorage.setItem('focusforge_guest', 'true');
@@ -118,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isGuest, signUp, signIn, signInWithGoogle, signInAsGuest, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isGuest, signUp, signIn, signInAsGuest, signOut }}>
       {children}
     </AuthContext.Provider>
   );
