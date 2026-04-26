@@ -72,8 +72,11 @@ export default function Tasks() {
       setTasks(data.tasks);
       return;
     }
-    await supabase.from('tasks').update({ completed: !task.completed }).eq('id', task.id);
-    setTasks(ts => ts.map(t => t.id === task.id ? { ...t, completed: !t.completed } : t));
+    if (!user) return;
+    const { error } = await supabase.from('tasks').update({ completed: !task.completed }).eq('id', task.id).eq('user_id', user.id);
+    if (!error) {
+      setTasks(ts => ts.map(t => t.id === task.id ? { ...t, completed: !t.completed } : t));
+    }
   }
 
   async function deleteTask(id: string) {
@@ -84,8 +87,11 @@ export default function Tasks() {
       setTasks(data.tasks);
       return;
     }
-    await supabase.from('tasks').delete().eq('id', id);
-    setTasks(ts => ts.filter(t => t.id !== id));
+    if (!user) return;
+    const { error } = await supabase.from('tasks').delete().eq('id', id).eq('user_id', user.id);
+    if (!error) {
+      setTasks(ts => ts.filter(t => t.id !== id));
+    }
   }
 
   const filtered = tasks.filter(t => filter === 'all' ? true : filter === 'active' ? !t.completed : t.completed);

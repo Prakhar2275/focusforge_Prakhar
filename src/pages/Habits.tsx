@@ -112,17 +112,55 @@ export default function Habits() {
       return;
     }
 
+    if (!user) return;
+
     const newStreak = newCompleted ? (habit.streak || 0) + 1 : Math.max(0, (habit.streak || 0) - 1);
-    await supabase.from('habits').update({
+    const { error: updateError } = await supabase.from('habits').update({
       completed_today: newCompleted,
       last_completed: newCompleted ? today : habit.last_completed,
       streak: newStreak,
       best_streak: Math.max(habit.best_streak || 0, newStreak),
-    }).eq('id', habit.id);
+    }).eq('id', habit.id).eq('user_id', user.id);
+
+    if (updateError) {
+      console.error('Update habit error:', updateError);
+      return;
+    }
 
     if (newCompleted) {
-      await supabase.from('habit_completions').insert({ habit_id: habit.id, user_id: user!.id });
+      const todayStart = today + 'T00:00:00Z';
+      const todayEnd = today + 'T23:59:59Z';
+
+      const { data: existing } = await supabase.from('habit_completions')
+        .select('id')
+        .eq('habit_id', habit.id)
+        .eq('user_id', user.id)
+        .gte('completed_at', todayStart)
+        .lte('completed_at', todayEnd)
+        .maybeSingle();
+
+      if (!existing) {
+        const { error: insertError } = await supabase.from('habit_completions').insert({
+          habit_id: habit.id,
+          user_id: user.id,
+          completed_at: new Date().toISOString(),
+        }).select().maybeSingle();
+
+        if (insertError) {
+          console.error('Insert completion error:', insertError);
+        }
+      }
+    } else {
+      const todayStart = today + 'T00:00:00Z';
+      const todayEnd = today + 'T23:59:59Z';
+
+      await supabase.from('habit_completions').delete()
+        .eq('habit_id', habit.id)
+        .eq('user_id', user.id)
+        .gte('completed_at', todayStart)
+        .lte('completed_at', todayEnd);
     }
+
     loadHabits();
   }
 
@@ -134,8 +172,11 @@ export default function Habits() {
       setHabits(data.habits);
       return;
     }
-    await supabase.from('habits').delete().eq('id', id);
-    setHabits(h => h.filter(x => x.id !== id));
+    if (!user) return;
+    const { error } = await supabase.from('habits').delete().eq('id', id).eq('user_id', user.id);
+    if (!error) {
+      setHabits(h => h.filter(x => x.id !== id));
+    }
   }
 
   function startEdit(habit: Habit) {
